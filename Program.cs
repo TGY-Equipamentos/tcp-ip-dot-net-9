@@ -6,26 +6,28 @@
 using System.Net.Sockets;
 using System.Text;
 
-internal static class Programa
+namespace TCP_IP_NET;
+
+internal static class TcpIpNet
 {
     // ========================================
     // CONFIGURAÇÕES DE CONEXÃO
     // ========================================
 
     // Endereço IP do servidor que queremos conectar
-    private static string EnderecoIp = "192.168.15.130";
+    private static string _enderecoIp = "192.168.15.130";
 
     // Porta TCP onde o servidor está escutando
-    private static int Porta = 1100;
+    private static int _porta = 1100;
 
     // Comando que será enviado ao servidor (em hexadecimal)
-    private static byte Comando = 0x05;
+    private static byte _comando = 0x05;
 
     // Delimitadores da mensagem:
     // STX (Start of Text) = 0x02 - marca o início da mensagem
     // ETX (End of Text) = 0x03 - marca o fim da mensagem
-    private static byte InicioMensagem = 0x02;
-    private static byte FimMensagem = 0x03;
+    private static byte _inicioMensagem = 0x02;
+    private static byte _fimMensagem = 0x03;
 
     // ========================================
     // MÉTODO PRINCIPAL
@@ -34,8 +36,8 @@ internal static class Programa
     {
         Console.WriteLine();
         Console.WriteLine();
-        Console.WriteLine($"Servidor: {EnderecoIp}:{Porta}");
-        Console.WriteLine($"Comando: 0x{Comando:X2}; Delimitadores: STX=0x{InicioMensagem:X2}, ETX=0x{FimMensagem:X2}");
+        Console.WriteLine($"Servidor: {_enderecoIp}:{_porta}");
+        Console.WriteLine($"Comando: 0x{_comando:X2}; Delimitadores: STX=0x{_inicioMensagem:X2}, ETX=0x{_fimMensagem:X2}");
         Console.WriteLine();
 
         try
@@ -57,7 +59,7 @@ internal static class Programa
         Console.WriteLine("Conectando ao servidor...");
         using var cliente = new TcpClient();
 
-        cliente.ConnectAsync(EnderecoIp, Porta).Wait();
+        cliente.ConnectAsync(_enderecoIp, _porta).Wait();
 
         // Verifica se conectou com sucesso
         if (!cliente.Connected)
@@ -70,7 +72,7 @@ internal static class Programa
         using var stream = cliente.GetStream();
 
         // ETAPA 3: ENVIAR COMANDO PARA O SERVIDOR
-        await EnviarComandoAsync(stream, Comando);
+        await EnviarComandoAsync(stream, _comando);
         Console.WriteLine();
 
         // ETAPA 4: RECEBER E PROCESSAR A RESPOSTA
@@ -136,12 +138,12 @@ internal static class Programa
 
             // Encontra a posição do byte de início (STX)
             if (posicaoInicio < 0)
-                posicaoInicio = textoAtual.IndexOf((char)InicioMensagem);
+                posicaoInicio = textoAtual.IndexOf((char)_inicioMensagem);
 
             // Se encontrou o STX, procura pelo ETX
             if (posicaoInicio >= 0)
             {
-                int posicaoFim = textoAtual.IndexOf((char)FimMensagem, posicaoInicio + 1);
+                int posicaoFim = textoAtual.IndexOf((char)_fimMensagem, posicaoInicio + 1);
 
                 // Se encontrou ambos os delimitadores, extrai a mensagem completa
                 if (posicaoFim > posicaoInicio)
@@ -164,11 +166,9 @@ internal static class Programa
     // Exemplo: "1500 2500 3750" = 1.500kg × R$ 25,00/kg = R$ 37,50
     private static string TentarFormatarDados(string resposta)
     {
-        var formatado = "";
-
         // Remove os delimitadores STX e ETX para extrair apenas o conteúdo
-        int posInicio = resposta.IndexOf((char)InicioMensagem);
-        int posFim = posInicio >= 0 ? resposta.IndexOf((char)FimMensagem, posInicio + 1) : -1;
+        int posInicio = resposta.IndexOf((char)_inicioMensagem);
+        int posFim = posInicio >= 0 ? resposta.IndexOf((char)_fimMensagem, posInicio + 1) : -1;
 
         string conteudo;
         if (posInicio >= 0 && posFim > posInicio)
@@ -205,7 +205,7 @@ internal static class Programa
         string totalFormatado = total.ToString("F2");
 
         // Monta a string formatada final
-        return formatado = $"Peso: {pesoFormatado} kg | Preço/Kg: R${precoFormatado} | Total: R${totalFormatado}";
+        return $"Peso: {pesoFormatado} kg | Preço/Kg: R${precoFormatado} | Total: R${totalFormatado}";
 
     }
 }
